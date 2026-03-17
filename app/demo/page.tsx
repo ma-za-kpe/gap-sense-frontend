@@ -26,6 +26,8 @@ export default function Home() {
   ]);
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Slideshow state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -61,6 +63,11 @@ export default function Home() {
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         };
         setChatHistory((prev) => [...prev, botResponse]);
+
+        // Check if response contains "Analyzing" - this means analysis has started
+        if (result.data.response.includes('Analyzing')) {
+          startPollingForCompletion();
+        }
       } else {
         const errorResponse: ChatMessage = {
           id: (Date.now() + 1).toString(),
@@ -154,6 +161,80 @@ export default function Home() {
       handleSendMessage();
     }
   };
+
+  // Analysis polling functions
+  const checkAnalysisStatus = async (): Promise<boolean> => {
+    try {
+      const response = await fetch(`http://localhost:8000/demo/reports/${encodeURIComponent(teacherPhone)}`);
+      const html = await response.text();
+
+      // Check for "Latest Analysis" section (indicates analysis completed)
+      const hasLatestAnalysis = html.includes('Latest Analysis');
+
+      return hasLatestAnalysis;
+    } catch (error) {
+      console.error('Error checking analysis status:', error);
+      return false;
+    }
+  };
+
+  const startPollingForCompletion = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    setIsAnalyzing(true);
+    let attempts = 0;
+    const maxAttempts = 60; // 60 attempts * 2s = 120s max
+
+    pollingIntervalRef.current = setInterval(async () => {
+      attempts++;
+      const isComplete = await checkAnalysisStatus();
+
+      if (isComplete) {
+        // Stop polling
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+        setIsAnalyzing(false);
+
+        // Show dashboard link
+        const dashboardUrl = `/demo/reports/${encodeURIComponent(teacherPhone)}`;
+        const dashboardMessage: ChatMessage = {
+          id: Date.now().toString(),
+          type: 'received',
+          text: `✅ Analysis complete! Click below to view the full report:\n\n📊 VIEW FULL REPORT: ${dashboardUrl}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        setChatHistory((prev) => [...prev, dashboardMessage]);
+      } else if (attempts >= maxAttempts) {
+        // Timeout
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+        setIsAnalyzing(false);
+
+        const timeoutMessage: ChatMessage = {
+          id: Date.now().toString(),
+          type: 'received',
+          text: '⏱️ Analysis is taking longer than expected. Please check the dashboard manually.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        setChatHistory((prev) => [...prev, timeoutMessage]);
+      }
+    }, 2000); // Poll every 2 seconds
+  };
+
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Slideshow functions
   const changeSlide = (direction: number) => {
