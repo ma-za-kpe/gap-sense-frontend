@@ -284,84 +284,84 @@ export default function Home() {
     </div>,
 
     // Slide 5: Live Demo
-    <div key={4} className="flex flex-col items-center justify-center h-full px-8">
-      <h2 className="text-4xl font-bold text-slate-800 mb-6 text-center">Real Production Results</h2>
-      <div className="max-w-[580px] text-left">
-        <h3 className="text-lg font-semibold text-slate-700 mb-3">📸 Teacher Uploads Photo</h3>
-        <div className="bg-slate-50 p-4 rounded-lg mb-6 border-l-4 border-whatsapp-500">
-          <p className="text-base">WhatsApp: "Here's Kofi's work on simultaneous equations"</p>
+    <div key={4} className="flex flex-col items-center justify-center h-full px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4 lg:mb-6 text-center">Real Production Results</h2>
+      <div className="max-w-[580px] text-left w-full">
+        <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-700 mb-2 sm:mb-3">📸 Teacher Uploads Photo</h3>
+        <div className="bg-slate-50 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 border-l-4 border-whatsapp-500">
+          <p className="text-xs sm:text-sm lg:text-base">WhatsApp: "Here's Kofi's work on simultaneous equations"</p>
         </div>
 
-        <div className="flex gap-8 mb-6">
-          <div className="flex-1 text-center bg-whatsapp-50 p-4 rounded-lg">
-            <div className="text-5xl font-bold text-whatsapp-500">7.97s</div>
-            <p className="text-sm text-slate-600 mt-2">Analysis time</p>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-8 mb-4 sm:mb-6">
+          <div className="flex-1 text-center bg-whatsapp-50 p-3 sm:p-4 rounded-lg">
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-whatsapp-500">7.97s</div>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 sm:mt-2">Analysis time</p>
           </div>
-          <div className="flex-1 text-center bg-gold-50 p-4 rounded-lg">
-            <div className="text-5xl font-bold text-gold-500">$0.006</div>
-            <p className="text-sm text-slate-600 mt-2">Cost per image</p>
+          <div className="flex-1 text-center bg-gold-50 p-3 sm:p-4 rounded-lg">
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gold-500">$0.006</div>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 sm:mt-2">Cost per image</p>
           </div>
         </div>
 
-        <h3 className="text-lg font-semibold text-slate-700 mb-3">✅ 4 Knowledge Gaps Found</h3>
-        <div className="bg-gold-50 p-4 rounded-lg border-l-4 border-gold-500">
-          <p className="text-base font-semibold mb-2">• Simultaneous equations (solving systems)</p>
-          <p className="text-base font-semibold mb-2">• Linear equations (prerequisite skill)</p>
-          <p className="text-base font-semibold mb-2">• Fraction operations (foundational)</p>
-          <p className="text-base font-semibold">• Arithmetic patterns (number sense)</p>
+        <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-700 mb-2 sm:mb-3">✅ 4 Knowledge Gaps Found</h3>
+        <div className="bg-gold-50 p-3 sm:p-4 rounded-lg border-l-4 border-gold-500">
+          <p className="text-xs sm:text-sm lg:text-base font-semibold mb-1 sm:mb-2">• Simultaneous equations (solving systems)</p>
+          <p className="text-xs sm:text-sm lg:text-base font-semibold mb-1 sm:mb-2">• Linear equations (prerequisite skill)</p>
+          <p className="text-xs sm:text-sm lg:text-base font-semibold mb-1 sm:mb-2">• Fraction operations (foundational)</p>
+          <p className="text-xs sm:text-sm lg:text-base font-semibold">• Arithmetic patterns (number sense)</p>
         </div>
       </div>
-      <p className="text-sm text-slate-400 italic mt-6">Live production system • Deployed March 15, 2026</p>
+      <p className="text-xs sm:text-sm text-slate-400 italic mt-3 sm:mt-6">Live production system • Deployed March 15, 2026</p>
     </div>,
 
     // Slide 6: How It Works
-    <div key={5} className="flex flex-col items-center justify-center h-full">
-      <h2 className="text-4xl font-bold text-slate-800 mb-6 text-center">Curriculum-Aligned AI Engine</h2>
-      <div className="max-w-[500px] text-left space-y-2">
-        <p className="text-sm">📱 <strong>WhatsApp API</strong> → Teacher uploads photo</p>
-        <p className="text-sm">☁️ <strong>AWS S3</strong> → Secure cloud storage</p>
-        <p className="text-sm">🤖 <strong>Claude AI (Haiku 4.5)</strong> → Analyzes against 27 curriculum nodes</p>
-        <p className="text-xs ml-8 text-slate-600">• Identifies misconceptions</p>
-        <p className="text-xs ml-8 text-slate-600">• Traces prerequisite gaps</p>
-        <p className="text-xs ml-8 text-slate-600 mb-2">• Detects error patterns</p>
-        <p className="text-sm">💾 <strong>PostgreSQL Database</strong> → Historical tracking</p>
-        <p className="text-sm">📊 <strong>Teacher Dashboard</strong> → WhatsApp report + web view</p>
+    <div key={5} className="flex flex-col items-center justify-center h-full px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4 lg:mb-6 text-center">Curriculum-Aligned AI Engine</h2>
+      <div className="max-w-[500px] text-left space-y-1 sm:space-y-2 w-full">
+        <p className="text-xs sm:text-sm">📱 <strong>WhatsApp API</strong> → Teacher uploads photo</p>
+        <p className="text-xs sm:text-sm">☁️ <strong>AWS S3</strong> → Secure cloud storage</p>
+        <p className="text-xs sm:text-sm">🤖 <strong>Claude AI (Haiku 4.5)</strong> → Analyzes against 27 curriculum nodes</p>
+        <p className="text-[10px] sm:text-xs ml-6 sm:ml-8 text-slate-600">• Identifies misconceptions</p>
+        <p className="text-[10px] sm:text-xs ml-6 sm:ml-8 text-slate-600">• Traces prerequisite gaps</p>
+        <p className="text-[10px] sm:text-xs ml-6 sm:ml-8 text-slate-600 mb-2">• Detects error patterns</p>
+        <p className="text-xs sm:text-sm">💾 <strong>PostgreSQL Database</strong> → Historical tracking</p>
+        <p className="text-xs sm:text-sm">📊 <strong>Teacher Dashboard</strong> → WhatsApp report + web view</p>
       </div>
-      <div className="mt-8 text-center">
-        <p className="text-sm text-slate-600">✅ 27 curriculum nodes mapped (Ghana Primary Math)</p>
-        <p className="text-sm text-slate-600">✅ Multi-country ready (Uganda, Kenya, Nigeria)</p>
-        <p className="text-sm text-slate-600">✅ Production deployed (AWS ECS + RDS + Load Balancer)</p>
+      <div className="mt-4 sm:mt-6 lg:mt-8 text-center">
+        <p className="text-xs sm:text-sm text-slate-600">✅ 27 curriculum nodes mapped (Ghana Primary Math)</p>
+        <p className="text-xs sm:text-sm text-slate-600">✅ Multi-country ready (Uganda, Kenya, Nigeria)</p>
+        <p className="text-xs sm:text-sm text-slate-600">✅ Production deployed (AWS ECS + RDS + Load Balancer)</p>
       </div>
     </div>,
 
     // Slide 7: Market Opportunity
-    <div key={6} className="flex flex-col items-center justify-center text-center h-full">
-      <h2 className="text-4xl font-bold text-slate-800 mb-4">Market Opportunity</h2>
-      <div className="text-[96px] font-bold text-whatsapp-500 mb-2">4.2M</div>
-      <p className="text-lg text-slate-700 mb-8">Primary students in Ghana</p>
+    <div key={6} className="flex flex-col items-center justify-center text-center h-full px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-2 sm:mb-4">Market Opportunity</h2>
+      <div className="text-5xl sm:text-7xl lg:text-[96px] font-bold text-whatsapp-500 mb-1 sm:mb-2">4.2M</div>
+      <p className="text-sm sm:text-base lg:text-lg text-slate-700 mb-4 sm:mb-6 lg:mb-8">Primary students in Ghana</p>
 
-      <div className="flex gap-6 mb-8">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 mb-4 sm:mb-6 lg:mb-8">
         <div>
-          <p className="text-2xl font-bold text-whatsapp-500 bg-whatsapp-50 px-6 py-2 rounded-lg">120K+</p>
-          <p className="text-sm text-slate-600 mt-2">Teachers</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-whatsapp-500 bg-whatsapp-50 px-4 sm:px-6 py-1 sm:py-2 rounded-lg">120K+</p>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 sm:mt-2">Teachers</p>
         </div>
         <div>
-          <p className="text-2xl font-bold text-whatsapp-500 bg-whatsapp-50 px-6 py-2 rounded-lg">32,000</p>
-          <p className="text-sm text-slate-600 mt-2">Schools</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-whatsapp-500 bg-whatsapp-50 px-4 sm:px-6 py-1 sm:py-2 rounded-lg">32,000</p>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 sm:mt-2">Schools</p>
         </div>
       </div>
 
-      <div className="bg-whatsapp-50 p-6 rounded-xl max-w-[500px] mb-6">
-        <h3 className="text-xl font-semibold text-slate-800 mb-4">Regional Expansion (12 months)</h3>
-        <div className="grid grid-cols-2 gap-4 text-base">
+      <div className="bg-whatsapp-50 p-4 sm:p-6 rounded-xl max-w-[500px] mb-4 sm:mb-6 w-full">
+        <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-slate-800 mb-2 sm:mb-4">Regional Expansion (12 months)</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm lg:text-base">
           <div>✅ Uganda: <strong>8.5M</strong></div>
           <div>✅ Kenya: <strong>10.1M</strong></div>
-          <div className="col-span-2">✅ Nigeria: <strong>27.5M</strong></div>
+          <div className="sm:col-span-2">✅ Nigeria: <strong>27.5M</strong></div>
         </div>
       </div>
 
-      <div className="text-[56px] font-bold text-gold-500 mb-2">50M+</div>
-      <p className="text-lg font-semibold text-slate-700">students across 4 countries</p>
+      <div className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-gold-500 mb-1 sm:mb-2">50M+</div>
+      <p className="text-sm sm:text-base lg:text-lg font-semibold text-slate-700">students across 4 countries</p>
     </div>,
 
     // Slide 8: Business Model
@@ -395,58 +395,58 @@ export default function Home() {
     </div>,
 
     // Slide 9: Competitive Landscape
-    <div key={8} className="flex flex-col items-center justify-center h-full px-8">
-      <h2 className="text-4xl font-bold text-slate-800 mb-6 text-center">Why GapSense Wins</h2>
-      <div className="max-w-[550px] text-left">
-        <p className="font-semibold text-slate-700 mb-4">Existing solutions don't work for Ghana:</p>
-        <p className="text-sm text-slate-600 mb-2">❌ <strong>Paper Tests:</strong> 5+ hours to grade, no gap tracing</p>
-        <p className="text-sm text-slate-600 mb-2">❌ <strong>Eneza Education:</strong> SMS-only, quiz-based, not diagnostic</p>
-        <p className="text-sm text-slate-600 mb-2">❌ <strong>Khan Academy:</strong> Internet needed, US curriculum, English-only</p>
-        <p className="text-sm text-slate-600 mb-6">❌ <strong>Other EdTech:</strong> Not Ghana-aligned, no WhatsApp integration</p>
+    <div key={8} className="flex flex-col items-center justify-center h-full px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4 lg:mb-6 text-center">Why GapSense Wins</h2>
+      <div className="max-w-[550px] text-left w-full">
+        <p className="font-semibold text-slate-700 mb-2 sm:mb-4 text-sm sm:text-base">Existing solutions don't work for Ghana:</p>
+        <p className="text-xs sm:text-sm text-slate-600 mb-1 sm:mb-2">❌ <strong>Paper Tests:</strong> 5+ hours to grade, no gap tracing</p>
+        <p className="text-xs sm:text-sm text-slate-600 mb-1 sm:mb-2">❌ <strong>Eneza Education:</strong> SMS-only, quiz-based, not diagnostic</p>
+        <p className="text-xs sm:text-sm text-slate-600 mb-1 sm:mb-2">❌ <strong>Khan Academy:</strong> Internet needed, US curriculum, English-only</p>
+        <p className="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-6">❌ <strong>Other EdTech:</strong> Not Ghana-aligned, no WhatsApp integration</p>
 
-        <p className="font-semibold text-gold-500 mb-3">Our Competitive Moat:</p>
-        <p className="text-sm text-slate-600 ml-5 mb-2">✅ Ghana curriculum prerequisite graph (27 nodes, 47 dependencies)</p>
-        <p className="text-sm text-slate-600 ml-5 mb-2">✅ Image-based diagnosis (no typing required)</p>
-        <p className="text-sm text-slate-600 ml-5 mb-2">✅ WhatsApp integration (98% penetration in Ghana)</p>
-        <p className="text-sm text-slate-600 ml-5">✅ Multi-country adaptability (4 curricula mapped)</p>
+        <p className="font-semibold text-gold-500 mb-2 sm:mb-3 text-sm sm:text-base">Our Competitive Moat:</p>
+        <p className="text-xs sm:text-sm text-slate-600 ml-4 sm:ml-5 mb-1 sm:mb-2">✅ Ghana curriculum prerequisite graph (27 nodes, 47 dependencies)</p>
+        <p className="text-xs sm:text-sm text-slate-600 ml-4 sm:ml-5 mb-1 sm:mb-2">✅ Image-based diagnosis (no typing required)</p>
+        <p className="text-xs sm:text-sm text-slate-600 ml-4 sm:ml-5 mb-1 sm:mb-2">✅ WhatsApp integration (98% penetration in Ghana)</p>
+        <p className="text-xs sm:text-sm text-slate-600 ml-4 sm:ml-5">✅ Multi-country adaptability (4 curricula mapped)</p>
       </div>
     </div>,
 
     // Slide 10: Traction
-    <div key={9} className="flex flex-col items-center justify-center h-full px-8">
-      <h2 className="text-4xl font-bold text-slate-800 mb-6 text-center">Production System LIVE ✨</h2>
-      <div className="max-w-[560px] space-y-4">
-        <div className="bg-whatsapp-50 p-6 rounded-xl border-l-4 border-whatsapp-500">
-          <h3 className="text-lg font-semibold text-slate-800 mb-3">✅ Cloud Infrastructure</h3>
-          <p className="text-base text-slate-700">Enterprise-grade cloud platform • Auto-scaling • Load balanced</p>
+    <div key={9} className="flex flex-col items-center justify-center h-full px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4 lg:mb-6 text-center">Production System LIVE ✨</h2>
+      <div className="max-w-[560px] space-y-3 sm:space-y-4 w-full">
+        <div className="bg-whatsapp-50 p-4 sm:p-6 rounded-xl border-l-4 border-whatsapp-500">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-800 mb-2 sm:mb-3">✅ Cloud Infrastructure</h3>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700">Enterprise-grade cloud platform • Auto-scaling • Load balanced</p>
         </div>
 
-        <div className="bg-whatsapp-50 p-6 rounded-xl border-l-4 border-whatsapp-500">
-          <h3 className="text-lg font-semibold text-slate-800 mb-3">✅ AI Engine Validated</h3>
-          <p className="text-base text-slate-700 mb-2"><strong>7.97s</strong> analysis • <strong>$0.006</strong> per image</p>
-          <p className="text-base text-slate-700">27 Ghana curriculum topics mapped</p>
+        <div className="bg-whatsapp-50 p-4 sm:p-6 rounded-xl border-l-4 border-whatsapp-500">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-800 mb-2 sm:mb-3">✅ AI Engine Validated</h3>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700 mb-1 sm:mb-2"><strong>7.97s</strong> analysis • <strong>$0.006</strong> per image</p>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700">27 Ghana curriculum topics mapped</p>
         </div>
 
-        <div className="bg-whatsapp-50 p-6 rounded-xl border-l-4 border-whatsapp-500">
-          <h3 className="text-lg font-semibold text-slate-800 mb-3">✅ Teacher-Ready Platform</h3>
-          <p className="text-base text-slate-700">WhatsApp integration • Web dashboard • Instant reports</p>
+        <div className="bg-whatsapp-50 p-4 sm:p-6 rounded-xl border-l-4 border-whatsapp-500">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-800 mb-2 sm:mb-3">✅ Teacher-Ready Platform</h3>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700">WhatsApp integration • Web dashboard • Instant reports</p>
         </div>
 
-        <div className="bg-gold-50 p-6 rounded-xl border-l-4 border-gold-500">
-          <h3 className="text-xl font-semibold text-gold-500 mb-4">🎯 Next 30 Days</h3>
-          <p className="text-base text-slate-700 mb-2">• Pilot with <strong>5 Accra schools</strong> (100 students)</p>
-          <p className="text-base text-slate-700 mb-2">• Teacher feedback & iteration</p>
-          <p className="text-base text-slate-700">• Validate <strong>85%+</strong> accuracy target</p>
+        <div className="bg-gold-50 p-4 sm:p-6 rounded-xl border-l-4 border-gold-500">
+          <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gold-500 mb-2 sm:mb-4">🎯 Next 30 Days</h3>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700 mb-1 sm:mb-2">• Pilot with <strong>5 Accra schools</strong> (100 students)</p>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700 mb-1 sm:mb-2">• Teacher feedback & iteration</p>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700">• Validate <strong>85%+</strong> accuracy target</p>
         </div>
       </div>
     </div>,
 
     // Slide 11: Team
-    <div key={10} className="flex flex-col items-center justify-center h-full">
-      <h2 className="text-4xl font-bold text-slate-800 mb-8 text-center">Built by Educators & Engineers</h2>
-      <div className="max-w-[500px] text-left">
-        <p className="text-lg font-semibold text-whatsapp-500 mb-4">Founder</p>
-        <p className="ml-5 mb-6 text-sm">
+    <div key={10} className="flex flex-col items-center justify-center h-full px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-4 sm:mb-6 lg:mb-8 text-center">Built by Educators & Engineers</h2>
+      <div className="max-w-[500px] text-left w-full">
+        <p className="text-base sm:text-lg font-semibold text-whatsapp-500 mb-2 sm:mb-4">Founder</p>
+        <p className="ml-4 sm:ml-5 mb-4 sm:mb-6 text-xs sm:text-sm">
           <strong>[Your Name]</strong> - Founder & CEO<br />
           <span className="text-slate-600">
             Background in education & technology<br />
@@ -455,8 +455,8 @@ export default function Home() {
           </span>
         </p>
 
-        <p className="text-lg font-semibold text-whatsapp-500 mb-4 mt-8">Why Us?</p>
-        <div className="ml-5 text-sm text-slate-600 space-y-1">
+        <p className="text-base sm:text-lg font-semibold text-whatsapp-500 mb-2 sm:mb-4 mt-4 sm:mt-8">Why Us?</p>
+        <div className="ml-4 sm:ml-5 text-xs sm:text-sm text-slate-600 space-y-1">
           <p>✅ Deep understanding of Ghana's education system</p>
           <p>✅ Technical expertise in AI/cloud infrastructure</p>
           <p>✅ Market proximity & cultural context</p>
@@ -466,30 +466,30 @@ export default function Home() {
     </div>,
 
     // Slide 12: The Ask
-    <div key={11} className="flex flex-col items-center justify-center text-center h-full px-8">
-      <h2 className="text-4xl font-bold text-slate-800 mb-6">Partner With Us</h2>
+    <div key={11} className="flex flex-col items-center justify-center text-center h-full px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4 lg:mb-6">Partner With Us</h2>
 
-      <div className="bg-gradient-to-br from-whatsapp-50 to-gold-50 p-8 rounded-2xl mb-8 max-w-[520px] border-2 border-whatsapp-200">
-        <p className="text-3xl font-semibold italic text-slate-800">"Every Ghanaian child masters foundational math by age 10"</p>
+      <div className="bg-gradient-to-br from-whatsapp-50 to-gold-50 p-4 sm:p-6 lg:p-8 rounded-2xl mb-4 sm:mb-6 lg:mb-8 max-w-[520px] border-2 border-whatsapp-200 w-full">
+        <p className="text-lg sm:text-2xl lg:text-3xl font-semibold italic text-slate-800">"Every Ghanaian child masters foundational math by age 10"</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 max-w-[600px] mb-6">
-        <div className="bg-whatsapp-50 p-5 rounded-xl text-left">
-          <h3 className="text-lg font-semibold text-slate-800 mb-3">What We Need</h3>
-          <p className="text-base text-slate-700 mb-2">💰 <strong>$5K</strong> UNICEF grant</p>
-          <p className="text-base text-slate-700 mb-2">📈 <strong>$15K</strong> scale-up (top 3)</p>
-          <p className="text-base text-slate-700">🏫 <strong>25 schools</strong> pilot access</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 max-w-[600px] mb-4 sm:mb-6 w-full">
+        <div className="bg-whatsapp-50 p-4 sm:p-5 rounded-xl text-left">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-800 mb-2 sm:mb-3">What We Need</h3>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700 mb-1 sm:mb-2">💰 <strong>$5K</strong> UNICEF grant</p>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700 mb-1 sm:mb-2">📈 <strong>$15K</strong> scale-up (top 3)</p>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700">🏫 <strong>25 schools</strong> pilot access</p>
         </div>
-        <div className="bg-gold-50 p-5 rounded-xl text-left">
-          <h3 className="text-lg font-semibold text-slate-800 mb-3">12-Month Impact</h3>
-          <p className="text-base text-slate-700 mb-2">📊 <strong>25 schools</strong> in 5 regions</p>
-          <p className="text-base text-slate-700 mb-2">👨‍🏫 <strong>500 teachers</strong> trained</p>
-          <p className="text-base text-slate-700">👧 <strong>5,000 students</strong> helped</p>
+        <div className="bg-gold-50 p-4 sm:p-5 rounded-xl text-left">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-slate-800 mb-2 sm:mb-3">12-Month Impact</h3>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700 mb-1 sm:mb-2">📊 <strong>25 schools</strong> in 5 regions</p>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700 mb-1 sm:mb-2">👨‍🏫 <strong>500 teachers</strong> trained</p>
+          <p className="text-xs sm:text-sm lg:text-base text-slate-700">👧 <strong>5,000 students</strong> helped</p>
         </div>
       </div>
 
-      <div className="text-[56px] font-bold text-gold-500 mb-2">85%+</div>
-      <p className="text-lg font-semibold text-slate-700">Target accuracy • Multi-country launch</p>
+      <div className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-gold-500 mb-1 sm:mb-2">85%+</div>
+      <p className="text-sm sm:text-base lg:text-lg font-semibold text-slate-700">Target accuracy • Multi-country launch</p>
     </div>,
   ];
 
