@@ -110,55 +110,55 @@ export default function TeacherDashboard() {
   };
 
   return (
-    <div className="min-h-screen p-5">
+    <div className="min-h-screen p-3 sm:p-5">
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-whatsapp-500 mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-whatsapp-500 mb-2">
               Teacher Dashboard
             </h1>
-            <p className="text-slate-600">
+            <p className="text-sm sm:text-base text-slate-600">
               {data.teacher.name} • {data.teacher.phone}
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.push('/demo')}>
-            ← Back to Demo
+          <Button variant="outline" size="sm" onClick={() => router.push('/demo')}>
+            ← Back
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
           <Card>
             <CardBody>
-              <div className="text-3xl font-bold text-whatsapp-500 mb-1">
+              <div className="text-2xl sm:text-3xl font-bold text-whatsapp-500 mb-1">
                 {data.stats.total_students}
               </div>
-              <div className="text-sm text-slate-600">Total Students</div>
+              <div className="text-xs sm:text-sm text-slate-600">Total Students</div>
             </CardBody>
           </Card>
           <Card>
             <CardBody>
-              <div className="text-3xl font-bold text-gold-500 mb-1">
+              <div className="text-2xl sm:text-3xl font-bold text-gold-500 mb-1">
                 {data.stats.scanned_today}
               </div>
-              <div className="text-sm text-slate-600">Scanned Today</div>
+              <div className="text-xs sm:text-sm text-slate-600">Scanned Today</div>
             </CardBody>
           </Card>
           <Card>
             <CardBody>
-              <div className="text-3xl font-bold text-slate-700 mb-1">
+              <div className="text-2xl sm:text-3xl font-bold text-slate-700 mb-1">
                 {data.stats.total_gaps}
               </div>
-              <div className="text-sm text-slate-600">Total Gaps</div>
+              <div className="text-xs sm:text-sm text-slate-600">Total Gaps</div>
             </CardBody>
           </Card>
           <Card>
             <CardBody>
-              <div className="text-3xl font-bold text-red-500 mb-1">
+              <div className="text-2xl sm:text-3xl font-bold text-red-500 mb-1">
                 {data.stats.high_priority}
               </div>
-              <div className="text-sm text-slate-600">High Priority</div>
+              <div className="text-xs sm:text-sm text-slate-600">High Priority</div>
             </CardBody>
           </Card>
         </div>
@@ -231,22 +231,22 @@ export default function TeacherDashboard() {
                 data.students.map((student) => (
                   <div
                     key={student.id}
-                    className="border border-slate-200 rounded-lg p-4 hover:border-whatsapp-500 transition-colors cursor-pointer"
+                    className="border border-slate-200 rounded-lg p-3 sm:p-4 hover:border-whatsapp-500 transition-colors cursor-pointer"
                     onClick={() =>
-                      router.push(`/reports/${encodeURIComponent(teacherPhone)}/student/${student.id}`)
+                      router.push(`/demo/reports/${encodeURIComponent(teacherPhone)}/student/${student.id}`)
                     }
                   >
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 gap-2 sm:gap-0">
                       <div>
-                        <p className="font-semibold text-lg text-slate-700">
+                        <p className="font-semibold text-base sm:text-lg text-slate-700">
                           {student.first_name}
                         </p>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-xs sm:text-sm text-slate-500">
                           Grade {student.grade} • {student.scan_count} scan(s)
                           {student.last_diagnosed && ` • Last: ${new Date(student.last_diagnosed).toLocaleDateString()}`}
                         </p>
                       </div>
-                      <Badge variant="whatsapp" className="text-sm px-3 py-1">
+                      <Badge variant="whatsapp" className="text-xs sm:text-sm px-2 sm:px-3 py-1">
                         {student.gaps.length} gaps
                       </Badge>
                     </div>

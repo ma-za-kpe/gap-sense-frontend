@@ -90,20 +90,20 @@ export default function CurriculumExplorer() {
   const nodes = filteredNodes();
 
   return (
-    <div className="min-h-screen p-5">
+    <div className="min-h-screen p-3 sm:p-5">
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-whatsapp-500 mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-whatsapp-500 mb-2">
               Ghana Curriculum Explorer
             </h1>
-            <p className="text-slate-600">
+            <p className="text-sm sm:text-base text-slate-600">
               Browse {data.total} learning objectives from the NaCCA curriculum
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.push('/demo')}>
-            ← Back to Demo
+          <Button variant="outline" size="sm" onClick={() => router.push('/demo')}>
+            ← Back
           </Button>
         </div>
 
@@ -157,29 +157,29 @@ export default function CurriculumExplorer() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 mb-6 sm:mb-8">
           <Card>
             <CardBody>
-              <div className="text-3xl font-bold text-whatsapp-500 mb-1">
+              <div className="text-2xl sm:text-3xl font-bold text-whatsapp-500 mb-1">
                 {data.total}
               </div>
-              <div className="text-sm text-slate-600">Total Learning Objectives</div>
+              <div className="text-xs sm:text-sm text-slate-600">Total Learning Objectives</div>
             </CardBody>
           </Card>
           <Card>
             <CardBody>
-              <div className="text-3xl font-bold text-gold-500 mb-1">
+              <div className="text-2xl sm:text-3xl font-bold text-gold-500 mb-1">
                 {data.grades.length}
               </div>
-              <div className="text-sm text-slate-600">Grade Levels (B1-B9)</div>
+              <div className="text-xs sm:text-sm text-slate-600">Grade Levels (B1-B9)</div>
             </CardBody>
           </Card>
           <Card>
             <CardBody>
-              <div className="text-3xl font-bold text-slate-700 mb-1">
+              <div className="text-2xl sm:text-3xl font-bold text-slate-700 mb-1">
                 {nodes.length}
               </div>
-              <div className="text-sm text-slate-600">
+              <div className="text-xs sm:text-sm text-slate-600">
                 {searchQuery || selectedGrade ? 'Filtered Results' : 'Currently Showing'}
               </div>
             </CardBody>
@@ -189,9 +189,9 @@ export default function CurriculumExplorer() {
         {/* Node Cards Grid */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-slate-700">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-700">
               {selectedGrade ? `Grade ${selectedGrade}` : 'All'} Learning Objectives
-              <span className="text-slate-500 text-lg ml-2">({nodes.length})</span>
+              <span className="text-slate-500 text-sm sm:text-base lg:text-lg ml-2">({nodes.length})</span>
             </h2>
           </div>
 
@@ -204,29 +204,29 @@ export default function CurriculumExplorer() {
               </CardBody>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
               {nodes.map((node) => (
                 <Card key={node.code} hover>
                   <CardBody>
                     <div className="flex items-start justify-between mb-3">
-                      <Badge variant="whatsapp" className="text-sm px-3 py-1">
+                      <Badge variant="whatsapp" className="text-xs sm:text-sm px-2 sm:px-3 py-1">
                         {node.code}
                       </Badge>
-                      <Badge className="bg-slate-100 text-slate-600 text-xs px-2 py-1">
+                      <Badge className="bg-slate-100 text-slate-600 text-[10px] sm:text-xs px-2 py-1">
                         Grade {node.grade}
                       </Badge>
                     </div>
 
-                    <h3 className="font-bold text-lg text-slate-700 mb-2">
+                    <h3 className="font-bold text-base sm:text-lg text-slate-700 mb-2">
                       {node.title}
                     </h3>
 
-                    <p className="text-sm text-slate-600 mb-3">
+                    <p className="text-xs sm:text-sm text-slate-600 mb-3">
                       {node.description}
                     </p>
 
                     <div className="pt-3 border-t border-slate-200">
-                      <p className="text-xs text-slate-500">
+                      <p className="text-[10px] sm:text-xs text-slate-500">
                         Subject: <span className="font-semibold text-slate-700">{node.subject}</span>
                       </p>
                     </div>
