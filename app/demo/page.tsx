@@ -595,7 +595,7 @@ export default function Home() {
         </div>
 
         {/* Slideshow Container (Right Column) */}
-        <div className="flex-1 h-[500px] lg:h-auto bg-white rounded-[15px] lg:rounded-[20px] shadow-container flex flex-col overflow-hidden relative">
+        <div className="flex-1 bg-white rounded-[15px] lg:rounded-[20px] shadow-container flex flex-col overflow-hidden relative">
           {/* Slideshow Header */}
           <div className="p-3 sm:p-5 border-b border-slate-200 flex justify-between items-center">
             <h2 className="text-base sm:text-xl font-semibold text-whatsapp-500">How GapSense Works</h2>
@@ -662,12 +662,12 @@ export default function Home() {
 
       {/* Fullscreen Modal */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
           <div className="w-full h-full flex flex-col">
             {/* Close Button */}
             <button
               onClick={() => setIsFullscreen(false)}
-              className="absolute top-6 right-6 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 text-white text-3xl flex items-center justify-center transition-colors z-10"
+              className="absolute top-6 right-6 w-14 h-14 rounded-full bg-slate-100 hover:bg-slate-200 text-whatsapp-500 text-3xl flex items-center justify-center transition-colors z-10"
             >
               ✕
             </button>
