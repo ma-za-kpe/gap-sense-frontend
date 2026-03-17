@@ -2,7 +2,7 @@
 
 ## ✅ Migration Complete!
 
-All routes have been migrated to Next.js with full feature parity.
+All routes have been migrated to Next.js with full feature parity, including the interactive 12-slide pitch deck.
 
 ### FastAPI Routes
 
