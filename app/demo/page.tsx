@@ -4,12 +4,49 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Card, CardTitle, CardBody, Badge, Input } from '@/components/ui';
 import { sendMessage, uploadImage } from '@/lib/api';
+import { ToastContainer } from '@/components/Toast';
+import { useToast } from '@/hooks/useToast';
+import { CommandPalette, useCommandPalette, Command } from '@/components/CommandPalette';
+import { DragDropUpload } from '@/components/DragDropUpload';
+import { HelpPanel, useHelpPanel } from '@/components/HelpPanel';
+import { SessionStatus } from '@/components/SessionStatus';
+import { ManagementDashboard, useManagementDashboard } from '@/components/ManagementDashboard';
 
 interface ChatMessage {
   id: string;
   type: 'received' | 'sent';
   text: string;
   timestamp: string;
+}
+
+// Backend state from API responses
+interface BackendState {
+  flow: string | null;          // "FLOW-TEACHER-ONBOARD" | "FLOW-EXERCISE-BOOK-SCAN"
+  next_step: string | null;     // "COLLECT_SCHOOL" | "SELECT_STUDENT" | etc
+  completed: boolean;
+}
+
+// Student for selection UI
+interface Student {
+  index: number;
+  name: string;
+}
+
+// Flow phases (UI states)
+type FlowPhase =
+  | 'IDLE'                 // Initial state
+  | 'ONBOARDING'           // Chat-based onboarding
+  | 'AWAITING_UPLOAD'      // Ready to upload image
+  | 'IMAGE_UPLOADED'       // Show image preview
+  | 'SELECT_STUDENT'       // Button-based student picker
+  | 'ANALYZING'            // Full-screen progress modal
+  | 'RESULTS_READY';       // Dashboard preview card
+
+// Analysis progress stages
+interface AnalysisStage {
+  id: string;
+  label: string;
+  status: 'pending' | 'active' | 'complete';
 }
 
 export default function Home() {
@@ -27,7 +64,27 @@ export default function Home() {
   const [sending, setSending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Flow state machine
+  const [flowPhase, setFlowPhase] = useState<FlowPhase>('IDLE');
+  const [backendState, setBackendState] = useState<BackendState>({
+    flow: null,
+    next_step: null,
+    completed: false,
+  });
+
+  // Student selection
+  const [students, setStudents] = useState<Student[]>([]);
+  const [uploadedImage, setUploadedImage] = useState<{file: File; preview: string} | null>(null);
+
+  // Analysis progress
+  const [analysisStages, setAnalysisStages] = useState<AnalysisStage[]>([
+    { id: 'upload', label: 'Uploading to cloud', status: 'pending' },
+    { id: 'analyze', label: 'AI analyzing work', status: 'pending' },
+    { id: 'gaps', label: 'Mapping curriculum gaps', status: 'pending' },
+    { id: 'report', label: 'Generating report', status: 'pending' },
+  ]);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   // Slideshow state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -35,56 +92,98 @@ export default function Home() {
   const [touchStart, setTouchStart] = useState(0);
   const TOTAL_SLIDES = 12;
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || sending) return;
+  // Toast notifications
+  const toast = useToast();
+
+  // Command palette
+  const commandPalette = useCommandPalette();
+
+  // Help panel
+  const helpPanel = useHelpPanel();
+
+  // Management dashboard
+  const managementDashboard = useManagementDashboard();
+
+  // Helper: Parse students from response
+  const parseStudentsFromResponse = (response: string): Student[] => {
+    const lines = response.split('\n');
+    const students: Student[] = [];
+
+    for (const line of lines) {
+      const match = line.match(/^(\d+)[.)]\s+(.+)$/);
+      if (match) {
+        students.push({
+          index: parseInt(match[1]),
+          name: match[2].trim(),
+        });
+      }
+    }
+
+    return students;
+  };
+
+  const handleSendMessage = async (buttonId?: string) => {
+    if (!message.trim() && !buttonId || sending) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'sent',
-      text: message,
+      text: message || buttonId || '',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
     setChatHistory((prev) => [...prev, userMessage]);
+    const currentMessage = message;
     setMessage('');
     setSending(true);
 
     try {
       const result = await sendMessage({
-        message: message,
+        message: currentMessage,
         teacher_phone: teacherPhone,
+        button_id: buttonId,
       });
 
-      if (result.success && result.data?.response) {
-        const botResponse: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          type: 'received',
-          text: result.data.response,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        };
-        setChatHistory((prev) => [...prev, botResponse]);
+      if (result.success && result.data) {
+        // Track backend state
+        setBackendState({
+          flow: result.data.flow || backendState.flow,
+          next_step: result.data.next_step || null,
+          completed: result.data.completed || false,
+        });
 
-        // Check if response contains "Analyzing" - this means analysis has started
-        if (result.data.response.includes('Analyzing')) {
-          startPollingForCompletion();
+        // Add bot response to chat
+        if (result.data.response) {
+          const botResponse: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            type: 'received',
+            text: result.data.response,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          };
+          setChatHistory((prev) => [...prev, botResponse]);
+        }
+
+        // Update flow phase based on backend state
+        if (result.data.next_step === 'SELECT_STUDENT') {
+          const parsedStudents = parseStudentsFromResponse(result.data.response);
+          if (parsedStudents.length > 0) {
+            setStudents(parsedStudents);
+            setFlowPhase('SELECT_STUDENT');
+          }
+        } else if (result.data.completed && result.data.flow === 'FLOW-TEACHER-ONBOARD') {
+          setFlowPhase('AWAITING_UPLOAD');
         }
       } else {
-        const errorResponse: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          type: 'received',
-          text: '❌ Error: ' + (result.error || 'Failed to send message'),
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        };
-        setChatHistory((prev) => [...prev, errorResponse]);
+        toast.error(result.error || 'Failed to send message', {
+          label: 'Retry',
+          onClick: () => handleSendMessage(buttonId),
+        });
       }
     } catch (error) {
-      const errorResponse: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: 'received',
-        text: '❌ Error: Failed to send message',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setChatHistory((prev) => [...prev, errorResponse]);
+      toast.error('Network error. Please check your connection.', {
+        label: 'Retry',
+        onClick: () => handleSendMessage(buttonId),
+      });
     } finally {
       setSending(false);
     }
@@ -93,6 +192,37 @@ export default function Home() {
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || sending) return;
+
+    // File validation
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+    if (file.size > maxSize) {
+      toast.error('Image too large. Maximum size is 10MB.', {
+        label: 'Choose different file',
+        onClick: () => fileInputRef.current?.click(),
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload JPG, PNG, or WebP.', {
+        label: 'Choose different file',
+        onClick: () => fileInputRef.current?.click(),
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Create image preview
+    const preview = URL.createObjectURL(file);
+    setUploadedImage({ file, preview });
+    setFlowPhase('IMAGE_UPLOADED');
 
     const uploadMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -104,54 +234,116 @@ export default function Home() {
     setChatHistory((prev) => [...prev, uploadMessage]);
     setSending(true);
 
-    const processingMessage: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      type: 'received',
-      text: '🔄 Processing your image... Analyzing student work with AI...',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-    setChatHistory((prev) => [...prev, processingMessage]);
-
     try {
       const result = await uploadImage({
         image: file,
         teacher_phone: teacherPhone,
       });
 
-      // Remove processing message
-      setChatHistory((prev) => prev.filter((msg) => msg.id !== processingMessage.id));
+      if (result.success && result.data) {
+        toast.success('Image uploaded successfully!');
 
-      if (result.success && result.data?.response) {
-        const botResponse: ChatMessage = {
-          id: (Date.now() + 2).toString(),
-          type: 'received',
-          text: result.data.response,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        };
-        setChatHistory((prev) => [...prev, botResponse]);
+        // Track backend state
+        setBackendState({
+          flow: result.data.flow || backendState.flow,
+          next_step: result.data.next_step || null,
+          completed: result.data.completed || false,
+        });
+
+        // Add bot response to chat
+        if (result.data.response) {
+          const botResponse: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            type: 'received',
+            text: result.data.response,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          };
+          setChatHistory((prev) => [...prev, botResponse]);
+
+          // Check if we need to show student selection UI
+          if (result.data.next_step === 'SELECT_STUDENT') {
+            const parsedStudents = parseStudentsFromResponse(result.data.response);
+            if (parsedStudents.length > 0) {
+              setStudents(parsedStudents);
+              setFlowPhase('SELECT_STUDENT');
+            }
+          }
+        }
       } else {
-        const errorResponse: ChatMessage = {
-          id: (Date.now() + 2).toString(),
-          type: 'received',
-          text: '❌ Error: ' + (result.error || 'Failed to process image'),
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        };
-        setChatHistory((prev) => [...prev, errorResponse]);
+        toast.error(result.error || 'Failed to process image', {
+          label: 'Try again',
+          onClick: () => fileInputRef.current?.click(),
+        });
       }
     } catch (error) {
-      setChatHistory((prev) => prev.filter((msg) => msg.id !== processingMessage.id));
-      const errorResponse: ChatMessage = {
-        id: (Date.now() + 2).toString(),
-        type: 'received',
-        text: '❌ Error: Failed to process image',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setChatHistory((prev) => [...prev, errorResponse]);
+      toast.error('Network error. Failed to process image.', {
+        label: 'Try again',
+        onClick: () => fileInputRef.current?.click(),
+      });
     } finally {
       setSending(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    }
+  };
+
+  const handleStudentSelection = async (student: Student) => {
+    if (sending) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'sent',
+      text: `Selected: ${student.name}`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    setChatHistory((prev) => [...prev, userMessage]);
+    setSending(true);
+
+    // Transition to ANALYZING phase immediately
+    setFlowPhase('ANALYZING');
+
+    // Reset analysis stages
+    setAnalysisStages([
+      { id: 'upload', label: 'Uploading to cloud', status: 'complete' },
+      { id: 'analyze', label: 'AI analyzing work (8s)', status: 'active' },
+      { id: 'gaps', label: 'Mapping curriculum gaps', status: 'pending' },
+      { id: 'report', label: 'Generating report', status: 'pending' },
+    ]);
+    setElapsedTime(0);
+
+    try {
+      // Send student selection to backend (this triggers S3 + SQS + Worker!)
+      const result = await sendMessage({
+        message: student.index.toString(),
+        teacher_phone: teacherPhone,
+      });
+
+      if (result.success && result.data?.response) {
+        const botResponse: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: 'received',
+          text: result.data.response,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        setChatHistory((prev) => [...prev, botResponse]);
+
+        // NOW start polling (after student selection, not before!)
+        toast.info('Analysis started. This usually takes 8-10 seconds.');
+        startPollingForCompletion();
+      }
+    } catch (error) {
+      toast.error('Failed to start analysis. Please try again.');
+      setFlowPhase('SELECT_STUDENT'); // Reset on error
+      const errorResponse: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'received',
+        text: '❌ Error: Failed to start analysis',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setChatHistory((prev) => [...prev, errorResponse]);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -183,38 +375,74 @@ export default function Home() {
       clearInterval(pollingIntervalRef.current);
     }
 
-    setIsAnalyzing(true);
     let attempts = 0;
-    const maxAttempts = 60; // 60 attempts * 2s = 120s max
+    const maxAttempts = 60; // 60 * 2s = 120s max
+
+    // Timer for elapsed time display
+    const timerInterval = setInterval(() => {
+      setElapsedTime((prev) => prev + 1);
+    }, 1000);
+
+    // Progress simulation (visual feedback while waiting)
+    setTimeout(() => {
+      setAnalysisStages((prev) =>
+        prev.map((s) => s.id === 'analyze' ? { ...s, status: 'complete' as const } : s)
+      );
+      setAnalysisStages((prev) =>
+        prev.map((s) => s.id === 'gaps' ? { ...s, status: 'active' as const } : s)
+      );
+    }, 4000); // After 4s
+
+    setTimeout(() => {
+      setAnalysisStages((prev) =>
+        prev.map((s) => s.id === 'gaps' ? { ...s, status: 'complete' as const } : s)
+      );
+      setAnalysisStages((prev) =>
+        prev.map((s) => s.id === 'report' ? { ...s, status: 'active' as const } : s)
+      );
+    }, 6000); // After 6s
 
     pollingIntervalRef.current = setInterval(async () => {
       attempts++;
       const isComplete = await checkAnalysisStatus();
 
       if (isComplete) {
-        // Stop polling
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-          pollingIntervalRef.current = null;
-        }
-        setIsAnalyzing(false);
+        clearInterval(pollingIntervalRef.current!);
+        clearInterval(timerInterval);
+        pollingIntervalRef.current = null;
 
-        // Show dashboard link
-        const dashboardUrl = `/demo/reports/${encodeURIComponent(teacherPhone)}`;
+        // Mark all stages complete
+        setAnalysisStages((prev) =>
+          prev.map((s) => ({ ...s, status: 'complete' as const }))
+        );
+
+        // Transition to RESULTS_READY phase
+        setFlowPhase('RESULTS_READY');
+
+        // Add success toast with action
+        toast.success(`Analysis complete in ${elapsedTime}s! Found learning gaps.`, {
+          label: 'View Report',
+          onClick: () => router.push(`/demo/reports/${encodeURIComponent(teacherPhone)}`),
+        });
+
         const dashboardMessage: ChatMessage = {
           id: Date.now().toString(),
           type: 'received',
-          text: `✅ Analysis complete! Click below to view the full report:\n\n📊 VIEW FULL REPORT: ${dashboardUrl}`,
+          text: `✅ Analysis complete in ${elapsedTime}s! Found learning gaps.`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         };
         setChatHistory((prev) => [...prev, dashboardMessage]);
       } else if (attempts >= maxAttempts) {
-        // Timeout
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-          pollingIntervalRef.current = null;
-        }
-        setIsAnalyzing(false);
+        clearInterval(pollingIntervalRef.current!);
+        clearInterval(timerInterval);
+        pollingIntervalRef.current = null;
+
+        setFlowPhase('IDLE'); // Reset on timeout
+
+        toast.warning('Analysis is taking longer than expected.', {
+          label: 'Check Dashboard',
+          onClick: () => router.push(`/demo/reports/${encodeURIComponent(teacherPhone)}`),
+        });
 
         const timeoutMessage: ChatMessage = {
           id: Date.now().toString(),
@@ -224,7 +452,7 @@ export default function Home() {
         };
         setChatHistory((prev) => [...prev, timeoutMessage]);
       }
-    }, 2000); // Poll every 2 seconds
+    }, 2000);
   };
 
   // Cleanup polling interval on unmount
@@ -574,13 +802,98 @@ export default function Home() {
     </div>,
   ];
 
+  // Command palette commands
+  const commands: Command[] = [
+    {
+      id: 'upload',
+      label: 'Upload Exercise Book',
+      description: 'Upload a student exercise book image',
+      icon: '📤',
+      shortcut: 'Cmd+U',
+      category: 'upload',
+      action: () => fileInputRef.current?.click(),
+    },
+    {
+      id: 'dashboard',
+      label: 'View Dashboard',
+      description: 'See all student reports and analytics',
+      icon: '📊',
+      shortcut: 'Cmd+D',
+      category: 'view',
+      action: () => router.push(`/demo/reports/${encodeURIComponent(teacherPhone)}`),
+    },
+    {
+      id: 'curriculum',
+      label: 'Browse Curriculum',
+      description: 'Explore the curriculum map',
+      icon: '📚',
+      shortcut: 'Cmd+B',
+      category: 'view',
+      action: () => router.push('/demo/curriculum'),
+    },
+    {
+      id: 'fullscreen',
+      label: 'Toggle Fullscreen Slides',
+      description: 'View slides in fullscreen mode',
+      icon: '🖥️',
+      shortcut: 'Cmd+F',
+      category: 'view',
+      action: () => setIsFullscreen(!isFullscreen),
+    },
+    {
+      id: 'help',
+      label: 'Get Help',
+      description: 'Learn how to use GapSense',
+      icon: '❓',
+      shortcut: 'Cmd+H',
+      category: 'help',
+      action: () => helpPanel.open(),
+    },
+    {
+      id: 'students',
+      label: 'Manage Students',
+      description: 'View, add, and edit students',
+      icon: '👥',
+      shortcut: 'Cmd+S',
+      category: 'flow',
+      action: () => managementDashboard.open('students'),
+    },
+    {
+      id: 'classes',
+      label: 'Manage Classes',
+      description: 'Create and organize classes',
+      icon: '🏫',
+      shortcut: 'Cmd+C',
+      category: 'flow',
+      action: () => managementDashboard.open('classes'),
+    },
+    {
+      id: 'school',
+      label: 'Select School',
+      description: 'Choose or register your school',
+      icon: '🎓',
+      shortcut: 'Cmd+L',
+      category: 'settings',
+      action: () => managementDashboard.open('school'),
+    },
+    {
+      id: 'profile',
+      label: 'Teacher Profile',
+      description: 'View and edit your profile',
+      icon: '👤',
+      shortcut: 'Cmd+P',
+      category: 'settings',
+      action: () => managementDashboard.open('profile'),
+    },
+  ];
+
   return (
     <div className="min-h-screen p-2 sm:p-5">
       {/* Main Container */}
       <div className="flex flex-col lg:flex-row gap-3 sm:gap-5 max-w-[1400px] lg:h-[calc(100vh-40px)] mx-auto">
 
         {/* Phone Mockup (Left Column) */}
-        <div className="w-full lg:w-[420px] lg:min-w-[380px] h-[600px] lg:h-auto bg-white rounded-[15px] lg:rounded-[20px] shadow-container flex flex-col overflow-hidden">
+        <div className="relative w-full lg:w-[420px] lg:min-w-[380px] h-[600px] lg:h-auto bg-white rounded-[15px] lg:rounded-[20px] shadow-container flex flex-col overflow-hidden">
           {/* Phone Header */}
           <div className="bg-gradient-whatsapp text-white p-3 sm:p-5">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
@@ -633,26 +946,80 @@ export default function Home() {
                   </div>
                 </div>
               )}
+
+              {/* Results Summary Card (shown in chat when flowPhase === 'RESULTS_READY') */}
+              {flowPhase === 'RESULTS_READY' && (
+                <div className="mt-4 p-4 bg-gradient-to-br from-whatsapp-50 to-gold-50 rounded-xl border-2 border-whatsapp-200">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="text-4xl">📊</div>
+                    <div>
+                      <h3 className="font-bold text-lg text-slate-800">Analysis Complete!</h3>
+                      <p className="text-sm text-slate-600">Learning gaps identified</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg p-3 mb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-slate-700">Analysis Time</span>
+                      <span className="text-lg font-bold text-whatsapp-600">{elapsedTime}s</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-slate-700">Gaps Found</span>
+                      <span className="text-lg font-bold text-gold-600">4</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => router.push(`/demo/reports/${encodeURIComponent(teacherPhone)}`)}
+                    className="w-full py-3 bg-whatsapp-500 text-white rounded-lg font-semibold hover:bg-whatsapp-700 transition-colors active:scale-95"
+                  >
+                    📊 View Full Report →
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setFlowPhase('AWAITING_UPLOAD');
+                      setUploadedImage(null);
+                      setStudents([]);
+                    }}
+                    className="w-full mt-2 py-2 text-sm text-slate-600 hover:text-slate-800"
+                  >
+                    Analyze Another Student
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Input Area */}
           <div className="border-t border-slate-200 bg-white p-3 sm:p-4">
-            <div className="flex gap-2 mb-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
+            {/* Hidden file input (still needed for command palette) */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+
+            {/* Drag-Drop Upload */}
+            <div className="mb-3">
+              <DragDropUpload
+                onFileSelect={(file) => {
+                  // Create synthetic event for handleImageUpload
+                  const event = {
+                    target: {
+                      files: [file],
+                    },
+                  } as any;
+                  handleImageUpload(event);
+                }}
+                onError={(msg) => toast.error(msg, {
+                  label: 'Choose different file',
+                  onClick: () => fileInputRef.current?.click(),
+                })}
                 disabled={sending}
-                className="px-3 sm:px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-xs sm:text-sm font-semibold disabled:opacity-50"
-              >
-                📎 Upload
-              </button>
+              />
             </div>
             <div className="flex gap-2">
               <Input
@@ -665,7 +1032,7 @@ export default function Home() {
                 rounded
               />
               <button
-                onClick={handleSendMessage}
+                onClick={() => handleSendMessage()}
                 disabled={sending || !message.trim()}
                 className="w-12 h-12 rounded-full bg-whatsapp-500 text-white flex items-center justify-center hover:bg-whatsapp-700 transition-colors disabled:opacity-50"
               >
@@ -673,6 +1040,114 @@ export default function Home() {
               </button>
             </div>
           </div>
+
+          {/* Student Picker UI (overlays chat when flowPhase === 'SELECT_STUDENT') */}
+          {flowPhase === 'SELECT_STUDENT' && (
+            <div className="absolute inset-0 bg-white z-10 flex flex-col">
+              <div className="p-4 bg-whatsapp-50 border-b border-whatsapp-200">
+                <h3 className="text-lg font-bold text-slate-800">Select Student</h3>
+                <p className="text-sm text-slate-600 mt-1">Tap to analyze their work</p>
+              </div>
+
+              {uploadedImage && (
+                <div className="p-4 border-b border-slate-200">
+                  <p className="text-xs text-slate-600 mb-2">Uploaded Image:</p>
+                  <img
+                    src={uploadedImage.preview}
+                    alt="Uploaded exercise book"
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {students.map((student) => (
+                  <button
+                    key={student.index}
+                    onClick={() => handleStudentSelection(student)}
+                    disabled={sending}
+                    className="w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-whatsapp-500 hover:bg-whatsapp-50 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-whatsapp-100 text-whatsapp-600 flex items-center justify-center font-bold">
+                          {student.index}
+                        </div>
+                        <p className="font-semibold text-slate-800">{student.name}</p>
+                      </div>
+                      <span className="text-slate-400">→</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-4 border-t border-slate-200 bg-slate-50">
+                <button
+                  onClick={() => {
+                    setFlowPhase('AWAITING_UPLOAD');
+                    setStudents([]);
+                  }}
+                  className="w-full py-2 text-sm text-slate-600 hover:text-slate-800"
+                >
+                  ← Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Analysis Progress Modal (full overlay when flowPhase === 'ANALYZING') */}
+          {flowPhase === 'ANALYZING' && (
+            <div className="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center p-6">
+              <div className="max-w-sm w-full">
+                <div className="text-center mb-8">
+                  <div className="text-6xl mb-4">🤖</div>
+                  <h2 className="text-2xl font-bold text-slate-800 mb-2">Analyzing...</h2>
+                  <p className="text-sm text-slate-600">AI is reviewing the exercise book</p>
+                </div>
+
+                {/* Progress stages */}
+                <div className="space-y-4 mb-6">
+                  {analysisStages.map((stage) => (
+                    <div key={stage.id} className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                        stage.status === 'complete' ? 'bg-whatsapp-500 text-white' :
+                        stage.status === 'active' ? 'bg-gold-500 text-white animate-pulse' :
+                        'bg-slate-200 text-slate-400'
+                      }`}>
+                        {stage.status === 'complete' ? '✓' :
+                         stage.status === 'active' ? '⏳' : '○'}
+                      </div>
+                      <span className={`text-sm ${
+                        stage.status === 'complete' ? 'text-slate-800 font-semibold' :
+                        stage.status === 'active' ? 'text-gold-600 font-semibold' :
+                        'text-slate-400'
+                      }`}>
+                        {stage.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Elapsed time */}
+                <div className="text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-whatsapp-500"></div>
+                    <span className="text-sm font-mono text-slate-600">{elapsedTime}s</span>
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="mt-6 w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-whatsapp-500 to-gold-500 h-full transition-all duration-1000"
+                    style={{
+                      width: `${Math.min((elapsedTime / 120) * 100, 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Slideshow Container (Right Column) */}
@@ -805,6 +1280,36 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toast.toasts} onDismiss={toast.removeToast} />
+
+      {/* Command Palette */}
+      <CommandPalette
+        isOpen={commandPalette.isOpen}
+        onClose={commandPalette.close}
+        commands={commands}
+      />
+
+      {/* Help Panel */}
+      <HelpPanel
+        isOpen={helpPanel.isOpen}
+        onClose={helpPanel.close}
+      />
+
+      {/* Management Dashboard */}
+      <ManagementDashboard
+        teacherPhone={teacherPhone}
+        isOpen={managementDashboard.isOpen}
+        onClose={managementDashboard.close}
+        initialTab={managementDashboard.initialTab}
+      />
+
+      {/* Session Status Indicator */}
+      <SessionStatus
+        isAnalyzing={flowPhase === 'ANALYZING'}
+        teacherPhone={teacherPhone}
+      />
     </div>
   );
 }
